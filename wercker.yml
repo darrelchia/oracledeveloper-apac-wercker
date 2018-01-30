@@ -1,0 +1,55 @@
+box:
+  id: golang
+  ports:
+    - "5000"
+
+dev:
+  steps:
+    - internal/watch:
+        code: |
+          go build -o wercker_example main.go
+          ./meetup_example
+        reload: true
+
+# Build definition
+build:
+  # The steps that will be executed on build
+  steps:
+
+    # golint step!. This re-formats the go code
+    - wercker/golint
+
+    # Run the go unit tests
+    - script:
+        name: go test
+        code: |
+          go test ./...
+
+    # Build the project
+    - script:
+        name: go build
+        code: |
+          go build -o wercker_example main.go
+    # Test the project
+
+push:
+  steps:
+    # Push to public docker repo
+    - internal/docker-push:
+        ports: "5000"
+        username: $DOCKER_USERNAME
+        password: $DOCKER_PASSWORD
+        tag: latest
+        repository: $DOCKER_REPOSITORY
+        registry: https://index.docker.io/v2/
+        cmd: /pipeline/source/wercker_example
+
+restart-occs:
+  steps:
+    # Manage Oracle Container Cloud Service container
+    - peternagy/oracle-occs-container-util:
+        occs_user: $OCCS_USER
+        occs_password: $OCCS_PASSWORD
+        rest_server_url: $REST_SERVER_URL
+        function: $FUNCTION
+deployment_name: $DEPLOYMENT_NAME 
