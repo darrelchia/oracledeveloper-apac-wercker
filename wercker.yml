@@ -8,7 +8,7 @@ dev:
     - internal/watch:
         code: |
           go build -o wercker_example main.go
-          ./meetup_example
+          ./wercker_example
         reload: true
 
 # Build definition
